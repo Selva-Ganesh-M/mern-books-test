@@ -5,12 +5,16 @@ import { healthRouter } from "./routers/health.router";
 import { _404Router } from "./routers/404.router";
 import customErrorHandler from "./utils/customErrorHandler";
 import cors from "cors";
+import { userRouter } from "./routers/user.router";
 
 const server = express();
 server.use(cors())
+server.use(express.json())
 
 
 //#region : 'routers'
+
+server.use("/api/users", userRouter)
 
 server.use("/healthz", healthRouter);
 
