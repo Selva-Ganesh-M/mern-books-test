@@ -8,9 +8,9 @@ export interface IBook {
     reviews: Array<mongoose.Schema.Types.ObjectId>
 }
 
-export interface IAuthorDoc extends Document, IAuthor {}
+export interface IBookDoc extends Document, IBook {}
 
-export interface IAuthorLeanDoc extends IAuthor {
+export interface IBookLeanDoc extends IBook {
     _id: string,
     createdAt: Date,
     updatedAt: Date
