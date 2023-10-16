@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
+
 export interface IAuthor {
     name: string; 
-    books: Array<string>;
+    books: Array<mongoose.Schema.Types.ObjectId>;
     email: string;
     password: string;
 }
