@@ -32,6 +32,8 @@ const bookSchema = new mongoose.Schema<IBook>({
             ref: "Review"
         }]
     }
+},{
+    timestamps: true
 })
 
 export const bookModel = mongoose.model("Book", bookSchema);

@@ -24,6 +24,8 @@ const authorSchema = new mongoose.Schema<IAuthor>({
             ref: 'Book'
         }]
     }
+}, {
+    timestamps: true
 })
 
 authorSchema.pre('save', function(next){
