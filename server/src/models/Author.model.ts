@@ -12,6 +12,7 @@ const authorSchema = new mongoose.Schema<IAuthor>({
     },
     email: {
         type: String,
+        unique: true,
         required: [true, "email is a mandatory field."]
     },
     password: {
