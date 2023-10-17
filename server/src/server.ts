@@ -32,8 +32,13 @@ db.connectToDb((err)=>{
     if (err){
         console.log(err.message);
     }else{
-        server.listen(envs.port, ()=>{
-            console.log(`server started at PORT ${envs.port}`)
-        })
+        try{
+            envs.envPresenceCheck();
+            server.listen(envs.port, ()=>{
+                console.log(`server started at PORT ${envs.port}`)
+            })
+        }catch(err){
+
+        }
     }
 })
