@@ -3,6 +3,7 @@ import { IUser } from "../models/userModel"
 import CustomError from "../utils/customError";
 import { userModel } from "../models/User.model";
 import { genJwt } from "../utils/genJwt";
+import { authorModel } from "../models/Author.model";
 
 const signup = async (req: Request<{}, {}, IUser & {type: "user" | "author"}, {}>, res: Response, next: NextFunction) => {
     try {
@@ -21,31 +22,60 @@ const signup = async (req: Request<{}, {}, IUser & {type: "user" | "author"}, {}
             .json({
             statusText: 'success',
             message: 'user signed up',
-            payload: user
+            payload: {...user, password: null}
             })
         }else{
 
         }
     } catch (error) {
-        
+        next(error)
     }
 }
 
-const login = function (req: Request<{}, {}, {email: string, password: string}>, res: Response, next: NextFunction) {
+const login = function (req: Request<{}, {}, {email: string, password: string, type: "user" | "author"}>, res: Response, next: NextFunction) {
     let data = req.body;
     if (!data.email || !data.password) return next(new CustomError(400, "email and password is mandatory."));
-    userModel
-    .findOne({email: data.email})
-    .lean()
-    .then((user)=>{
-        if(!user) return next(new CustomError(404, 'user not found'));
-        return res.cookie("access_token", genJwt({email: user.email, _id: user._id.toString()}), {httpOnly: true, secure: true}).status(200).json({
-        statusText: 'success',
-        message: 'login success',
-        payload: user
-        })
-    })
-    .catch(err=>next(err))
+    switch(data.type){
+        case 'user':
+            userModel
+            .findOne({email: data.email})
+            .lean()
+            .then((user)=>{
+                if(!user) return next(new CustomError(404, 'user not found'));
+                return res
+                .cookie("access_token", genJwt({email: user.email, _id: user._id.toString()}), {httpOnly: true, secure: true})
+                .status(200)
+                .json({
+                statusText: 'success',
+                message: 'login success',
+                payload: {...user, password: null}
+                })
+            })
+            .catch(err=>next(err))
+            break;
+        case "author":
+            authorModel
+            .findOne({email: data.email})
+            .lean()
+            .then((author)=>{
+                if(!author) return next(new CustomError(404, 'author not found'));
+                return res
+                .cookie(
+                    "access_token",
+                    genJwt({email: author.email, _id: author._id.toString()}),
+                    {httpOnly: true, secure: true})
+                .status(200)
+                .json({
+                    statusText: 'success',
+                    message: 'login success',
+                    payload: author
+                })
+            })
+            .catch(err=>next(err))
+            break;
+        default:
+            next(new CustomError(400, "invalid type is provided."));
+    }
 }
 
 const logout = function(req: Request, res: Response, next: NextFunction){

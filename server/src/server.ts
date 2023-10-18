@@ -1,26 +1,21 @@
 import express from "express"
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import { envs } from "./config/env.config";
 import { db } from "./config/db.config";
-import { healthRouter } from "./routers/health.router";
 import { _404Router } from "./routers/404.router";
 import customErrorHandler from "./utils/customErrorHandler";
-import cors from "cors";
-import { userRouter } from "./routers/user.router";
+import router from "./routers/router";
+import CustomError from "./utils/customError";
 
 const server = express();
+
 server.use(cors())
 server.use(express.json())
+server.use(cookieParser())
 
-
-//#region : 'routers'
-
-server.use("/api/users", userRouter)
-
-server.use("/healthz", healthRouter);
-
-server.use("/*", _404Router)
-
-//#endregion : 'routers'
+server.use("/api", router)
 
 // custom error handler
 server.use(customErrorHandler)
@@ -37,8 +32,13 @@ db.connectToDb((err)=>{
             server.listen(envs.port, ()=>{
                 console.log(`server started at PORT ${envs.port}`)
             })
-        }catch(err){
-
+        }catch(err: unknown){
+            if (err instanceof Error || err instanceof CustomError){
+                console.log(err.message)
+            }else{
+                console.log(`Error: ${JSON.stringify(err)}`)
+            }
+            process.exit(1);
         }
     }
 })
