@@ -4,16 +4,17 @@ import CustomError from "../utils/customError";
 import { userModel } from "../models/User.model";
 import { genJwt } from "../utils/genJwt";
 import { authorModel } from "../models/Author.model";
+import { IAuthorDoc, IAuthorLeanDoc } from "../models/authorModel";
 
 const signup = async (req: Request<{}, {}, IUser & {type: "user" | "author"}, {}>, res: Response, next: NextFunction) => {
     try {
         const reqUser = req.body;
         if (!reqUser.type) throw new CustomError(400, "user type is mandatory to signup.")
         if (reqUser.type=="user"){
-            let user = new userModel({...reqUser, type: null})
+            let user = new userModel({...reqUser})
             user = await user.save();
             return res
-            .cookie("access_token", genJwt({email: user.email, _id:user._id.toString()}), {
+            .cookie("access_token", genJwt({email: user.email, _id:user._id.toString(), type: reqUser.type}), {
                 httpOnly: true,
                 secure: true,
                 path: "/"
@@ -21,11 +22,24 @@ const signup = async (req: Request<{}, {}, IUser & {type: "user" | "author"}, {}
             .status(201)
             .json({
             statusText: 'success',
-            message: 'user signed up',
-            payload: {...user, password: null}
+            message: `user signed up`,
+            payload: {...user.toObject(), password: null}
             })
         }else{
-
+            let author = new authorModel({...reqUser})
+            author = await author.save();
+            return res
+            .cookie("access_token", genJwt({email: author.email, _id:author._id.toString(), type: reqUser.type}), {
+                httpOnly: true,
+                secure: true,
+                path: "/"
+            })
+            .status(201)
+            .json({
+            statusText: 'success',
+            message: `author signed up`,
+            payload: {...author.toObject(), password: null}
+            })
         }
     } catch (error) {
         next(error)
@@ -38,12 +52,12 @@ const login = function (req: Request<{}, {}, {email: string, password: string, t
     switch(data.type){
         case 'user':
             userModel
-            .findOne({email: data.email})
+            .findOne({email: data.email}, {password: -1})
             .lean()
             .then((user)=>{
                 if(!user) return next(new CustomError(404, 'user not found'));
                 return res
-                .cookie("access_token", genJwt({email: user.email, _id: user._id.toString()}), {httpOnly: true, secure: true})
+                .cookie("access_token", genJwt({email: user.email, _id: user._id.toString(), type: "user"}), {httpOnly: true, secure: true})
                 .status(200)
                 .json({
                 statusText: 'success',
@@ -55,14 +69,14 @@ const login = function (req: Request<{}, {}, {email: string, password: string, t
             break;
         case "author":
             authorModel
-            .findOne({email: data.email})
+            .findOne({email: data.email}, {password: -1})
             .lean()
             .then((author)=>{
                 if(!author) return next(new CustomError(404, 'author not found'));
                 return res
                 .cookie(
                     "access_token",
-                    genJwt({email: author.email, _id: author._id.toString()}),
+                    genJwt({email: author.email, _id: author._id.toString(), type: "author"}),
                     {httpOnly: true, secure: true})
                 .status(200)
                 .json({

@@ -14,11 +14,15 @@ const userSchema = new mongoose.Schema<IUser>({
     email: {
         type: String,
         unique: true,
-        required: [true, "email is a mandatory field."]
+        required: [true, "email is a mandatory field."],
     },
     password: {
         type: String,
         required: [true, "password is a mandatory field."]
+    },
+    type: {
+        type: String,
+        default: 'user',
     }
 },{
     timestamps: true

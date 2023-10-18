@@ -6,7 +6,7 @@ import passwordHasher from "../utils/passwordHasher";
 import bcrypt from "bcrypt"
 
 const authorSchema = new mongoose.Schema<IAuthor>({
-    name: {
+    userName: {
         type: String,
         required: [true, "author name is a mandatory field."]
     },
@@ -18,6 +18,10 @@ const authorSchema = new mongoose.Schema<IAuthor>({
     password: {
         type: String,
         required: [true, "password is a mandatory field."]
+    },
+    type: {
+        type: String,
+        default: 'author',
     },
     books: {
         type: [{

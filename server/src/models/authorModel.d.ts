@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
 export interface IAuthor {
-    name: string; 
+    userName: string; 
     books: Array<mongoose.Schema.Types.ObjectId>;
     email: string;
     password: string;
+    type: "author"
 }
 
 export interface IAuthorDoc extends Document, IAuthor {}
